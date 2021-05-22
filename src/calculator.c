@@ -508,7 +508,7 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
     }
 }
 
-void parse(uint8_t enteredText[], uint16_t inputIndex, uint16_t startPos)
+void parse(uint8_t enteredText[], uint16_t inputIndex)
 {
     uint8_t tempInt = 0;
     
@@ -516,7 +516,7 @@ void parse(uint8_t enteredText[], uint16_t inputIndex, uint16_t startPos)
     
     enteredText[inputIndex++] = '#';
     
-    for(i = startPos; i < inputIndex; i++)
+    for(i = 0; i < inputIndex; i++)
     {
         //Digit of a number
         if(isdigit(enteredText[i]))
