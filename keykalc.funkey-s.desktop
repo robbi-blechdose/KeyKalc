@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=KeyKalc
+Comment=Graphing Calculator
+Exec=main-funkey.elf
+Icon=icon
+Terminal=false
+Categories=applications;
