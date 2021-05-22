@@ -9,7 +9,7 @@ uint8_t cursorX, cursorY;
 const char* keyboard[4] = {"123+-QWERTZUIOP",
                            "456*\366ASDFGHJKL ",
                            "789^\373YXCVBNM   ",
-                           "0. ()         "};
+                           "0. ()          "};
 
 void initDisplay()
 {
@@ -18,17 +18,25 @@ void initDisplay()
     cursorY = 0;
 }
 
+void drawTitleBar(SDL_Surface* screen, char* mode)
+{
+    hlineRGBA(screen, 0, 240, 13, 0, 255, 0, 255);
+    boxRGBA(screen, 0, 0, 240, 12, 0, 0, 0, 255);
+    stringRGBA(screen, 36, 4, "KeyKalc | Mode:", 0, 255, 0, 255);
+    stringRGBA(screen, 36 + 16 * 8, 4, mode, 0, 255, 0, 255);
+}
+
 void drawInput(SDL_Surface* screen, char* input, uint16_t inputEnd)
 {
     uint16_t i = 0;
     uint8_t x = 0;
     uint8_t y = 0;
     
-    boxRGBA(screen, 0, 0, 240, 199, 0, 0, 0, 255);
+    boxRGBA(screen, 0, 14, 240, 199, 0, 0, 0, 255);
 
     for(i = 0; i < inputEnd; i++)
     {
-        characterRGBA(screen, 4 + x * 8, 4 + y * 8, input[i], 0, 255, 0, 255);
+        characterRGBA(screen, 4 + x * 8, 18 + y * 8, input[i], 0, 255, 0, 255);
         x++;
         if(x == 29)
         {
@@ -52,6 +60,7 @@ void drawOSK(SDL_Surface* screen)
     stringRGBA(screen, 4, 212, keyboard[1], 0, 255, 0, 255);
     stringRGBA(screen, 4, 220, keyboard[2], 0, 255, 0, 255);
     stringRGBA(screen, 4, 228, keyboard[3], 0, 255, 0, 255);
+    drawOSKCursor(screen, 1);
 }
 
 void drawOSKCursor(SDL_Surface* screen, uint8_t new)

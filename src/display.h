@@ -13,6 +13,8 @@
 
 void initDisplay();
 
+void drawTitleBar(SDL_Surface* screen, char* mode);
+
 void drawInput(SDL_Surface* screen, char* input, uint16_t inputEnd);
 void drawResult(SDL_Surface* screen, double result);
 void drawOSK(SDL_Surface* screen);
