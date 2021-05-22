@@ -4,6 +4,10 @@
 #include "display.h"
 #include "calculator.h"
 
+uint8_t running = 1;
+SDL_Event event;
+
+SDL_Surface* screen;
 FPSmanager fpsManager;
 
 //TODO: Move to its own file: "input"
@@ -11,10 +15,23 @@ FPSmanager fpsManager;
 char input[INPUT_LENGTH];
 uint16_t inputIndex = 0;
 
-uint8_t running = 1;
-SDL_Event event;
+#define MODE_CALC  0
+#define MODE_GRAPH 1
+uint8_t mode;
 
-SDL_Surface* screen;
+void applyModeSwitch()
+{
+    drawOSK(screen);
+
+    if(mode == MODE_CALC)
+    {
+        drawTitleBar(screen, "Calc");
+    }
+    else
+    {
+        drawTitleBar(screen, "Plot");
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -27,8 +44,9 @@ int main(int argc, char **argv)
     SDL_setFramerate(&fpsManager, 50);
     //Setup display
     initDisplay();
-
-    drawOSK(screen);
+    //Setup mode
+    mode = MODE_CALC;
+    applyModeSwitch();
 
     //Main loop
     while(running)
@@ -80,7 +98,7 @@ int main(int argc, char **argv)
                     case SDLK_s:
                     {
                         //Start calculation
-                        parse(input, inputIndex, 0);
+                        parse(input, inputIndex);
                         calculateResult(0);
                         drawResult(screen, getResult());
                         break;
@@ -88,6 +106,24 @@ int main(int argc, char **argv)
                     case SDLK_k:
                     {
                         //Show menu
+                        break;
+                    }
+                    case SDLK_n:
+                    {
+                        if(mode == MODE_CALC)
+                        {
+                            mode = MODE_GRAPH;
+                            applyModeSwitch();
+                        }
+                        break;
+                    }
+                    case SDLK_m:
+                    {
+                        if(mode == MODE_GRAPH)
+                        {
+                            mode = MODE_CALC;
+                            applyModeSwitch();
+                        }
                         break;
                     }
                     case SDLK_q:
