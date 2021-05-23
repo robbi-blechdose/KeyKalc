@@ -220,7 +220,7 @@ int main(int argc, char **argv)
                         applyModeSwitch();
                         break;
                     }
-                    case SDLK_m:
+                    case SDLK_n:
                     {
                         if(mode == MODE_GRAPH && plotIndex < 3)
                         {
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
                         }
                         break;
                     }
-                    case SDLK_n:
+                    case SDLK_m:
                     {
                         if(mode == MODE_GRAPH && plotIndex > 0)
                         {
