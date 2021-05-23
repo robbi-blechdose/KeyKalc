@@ -3,6 +3,7 @@
 
 #include "display.h"
 #include "calculator.h"
+#include "input.h"
 
 uint8_t running = 1;
 SDL_Event event;
@@ -10,14 +11,26 @@ SDL_Event event;
 SDL_Surface* screen;
 FPSmanager fpsManager;
 
-#define MAX_INPUT_LENGTH 256
-char input[MAX_INPUT_LENGTH];
-uint16_t inputEnd = 0;
-uint16_t inputCursor = 0;
-
 #define MODE_CALC  0
 #define MODE_GRAPH 1
+#define MODE_GDISP 2
 uint8_t mode;
+
+//Calc mode input
+#define MAX_INPUT_LENGTH 256
+char input[MAX_INPUT_LENGTH];
+uint16_t inputCursor = 0;
+uint16_t inputEnd = 0;
+
+//Plot mode inputs
+char plotInput0[MAX_INPUT_LENGTH];
+char plotInput1[MAX_INPUT_LENGTH];
+char plotInput2[MAX_INPUT_LENGTH];
+char plotInput3[MAX_INPUT_LENGTH];
+char* plotInputs[4] = {plotInput0, plotInput1, plotInput2, plotInput3};
+uint16_t plotInputCursors[4] = {0, 0, 0, 0};
+uint16_t plotInputEnds[4] = {0, 0, 0, 0};
+uint8_t plotIndex = 0;
 
 void applyModeSwitch()
 {
@@ -31,6 +44,7 @@ void applyModeSwitch()
     else
     {
         drawTitleBar(screen, "Plot");
+        drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
     }
 }
 
@@ -57,7 +71,6 @@ int main(int argc, char **argv)
         {
             if(event.type == SDL_QUIT)
             {
-                printf("quit\n");
                 running = 0;
             }
             else if(event.type == SDL_KEYUP)
@@ -86,39 +99,106 @@ int main(int argc, char **argv)
                     }
                     case SDLK_a:
                     {
-                        enterChar(input, &inputCursor, &inputEnd, getCurrentChar());
-                        drawInput(screen, input, inputCursor, inputEnd);
+                        if(mode == MODE_CALC)
+                        {
+                            enterChar(input, &inputCursor, &inputEnd, getCurrentChar());
+                            drawInput(screen, input, inputCursor, inputEnd);
+                        }
+                        else if(mode == MODE_GRAPH)
+                        {
+                            enterChar(plotInputs[plotIndex], &(plotInputCursors[plotIndex]),
+                                        &(plotInputEnds[plotIndex]), getCurrentChar());
+                            drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+                        }
                         break;
                     }
                     case SDLK_b:
                     {
-                        removeChar(input, &inputCursor, &inputEnd);
-                        drawInput(screen, input, inputCursor, inputEnd);
+                        if(mode == MODE_CALC)
+                        {
+                            removeChar(input, &inputCursor, &inputEnd);
+                            drawInput(screen, input, inputCursor, inputEnd);
+                        }
+                        else if(mode == MODE_GRAPH)
+                        {
+                            removeChar(plotInputs[plotIndex], &(plotInputCursors[plotIndex]),
+                                        &(plotInputEnds[plotIndex]));
+                            drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+                        }
+                        else if(mode == MODE_GDISP)
+                        {
+                            mode = MODE_GRAPH;
+                            applyModeSwitch();
+                        }
                         break;
                     }
                     case SDLK_s:
                     {
-                        //Start calculation
-                        parse(input, inputEnd);
-                        calculateResult(0);
-                        drawResult(screen, getResult());
+                        if(mode == MODE_CALC)
+                        {
+                            //Start calculation
+                            parse(input, inputEnd);
+                            calculateResult(0);
+                            clearStack();
+                            drawResult(screen, getResult());
+                        }
+                        else //if(mode == MODE_GRAPH)
+                        {
+                            mode = MODE_GDISP;
+                            uint8_t i, j;
+                            drawPlotGrid(screen);
+                            for(i = 0; i < 4; i++)
+                            {
+                                double points[240];
+                                parse(plotInputs[i], plotInputEnds[i]);
+                                for(j = 0; j < 240; j++)
+                                {
+                                    calculateResult(j - 120);
+                                    points[j] = getResult();
+                                }
+                                clearStack();
+                                drawFunction(screen, points, i);
+                            }
+                        }
                         break;
                     }
                     case SDLK_x:
                     {
-                        if(inputCursor < inputEnd)
+                        if(mode == MODE_CALC)
                         {
-                            inputCursor++;
-                            drawInput(screen, input, inputCursor, inputEnd);
+                            if(inputCursor < inputEnd)
+                            {
+                                inputCursor++;
+                                drawInput(screen, input, inputCursor, inputEnd);
+                            }
+                        }
+                        else if(mode == MODE_GRAPH)
+                        {
+                            if(plotInputCursors[plotIndex] < plotInputEnds[plotIndex])
+                            {
+                                plotInputCursors[plotIndex]++;
+                                drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+                            }
                         }
                         break;
                     }
                     case SDLK_y:
                     {
-                        if(inputCursor > 0)
+                        if(mode == MODE_CALC)
                         {
-                            inputCursor--;
-                            drawInput(screen, input, inputCursor, inputEnd);
+                            if(inputCursor > 0)
+                            {
+                                inputCursor--;
+                                drawInput(screen, input, inputCursor, inputEnd);
+                            }
+                        }
+                        else if(mode == MODE_GRAPH)
+                        {
+                            if(plotInputCursors[plotIndex] > 0)
+                            {
+                                plotInputCursors[plotIndex]--;
+                                drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+                            }
                         }
                         break;
                     }
@@ -128,35 +208,30 @@ int main(int argc, char **argv)
                         if(mode == MODE_CALC)
                         {
                             mode = MODE_GRAPH;
-                            applyModeSwitch();
-                            //TODO: Remove this test
-                            drawPlotGrid(screen);
-                            int8_t points[240];
-                            uint8_t i;
-                            for(i = 0; i < 240; i++)
-                            {
-                                points[i] = 20.0f * sin((i - 120) / 20.0f);
-                            }
-                            drawFunction(screen, points, 0);
-                            for(i = 0; i < 240; i++)
-                            {
-                                points[i] = 20.0f * cos((i - 120) / 20.0f);
-                            }
-                            drawFunction(screen, points, 1);
                         }
                         else //if(mode == MODE_GRAPH)
                         {
                             mode = MODE_CALC;
-                            applyModeSwitch();
+                        }
+                        applyModeSwitch();
+                        break;
+                    }
+                    case SDLK_m:
+                    {
+                        if(mode == MODE_GRAPH && plotIndex < 3)
+                        {
+                            plotIndex++;
+                            drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
                         }
                         break;
                     }
                     case SDLK_n:
                     {
-                        break;
-                    }
-                    case SDLK_m:
-                    {
+                        if(mode == MODE_GRAPH && plotIndex > 0)
+                        {
+                            plotIndex--;
+                            drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+                        }
                         break;
                     }
                     case SDLK_q:

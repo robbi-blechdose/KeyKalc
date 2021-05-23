@@ -851,7 +851,6 @@ void calculateResult(double x)
     
     result = evalStack[0];
     clearEvalStack();
-    clearStack();
 }
 
 double getResult()
