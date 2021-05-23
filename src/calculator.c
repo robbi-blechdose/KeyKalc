@@ -1,56 +1,10 @@
 #include <stdint.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "calculator.h"
 
-#define MAX_STACK_SIZE 81
-#define TYPE_NUMBER 0
-
-//Identifiers for parsing functions
-#define F_SIN 1
-#define F_COS 2
-#define F_TAN 3
-
-#define F_ASIN 4
-#define F_ACOS 5
-#define F_ATAN 6
-
-#define F_SQRT 7
-#define F_NRT 8
-
-#define F_COT 9
-#define F_SEC 10
-#define F_CSC 11
-
-#define F_SINH 12
-#define F_COSH 13
-#define F_TANH 14
-
-#define F_LOG 15
-#define F_LN  16
-
-#define F_N_SIN 17
-#define F_N_COS 18
-#define F_N_TAN 19
-
-#define F_N_ASIN 20
-#define F_N_ACOS 21
-#define F_N_ATAN 22
-
-#define F_N_SQRT 23
-#define F_N_NRT 24
-
-#define F_N_COT 25
-#define F_N_SEC 26
-#define F_N_CSC 27
-
-#define F_N_SINH 28
-#define F_N_COSH 29
-#define F_N_TANH 30
-
-#define F_N_LOG 31
-#define F_N_LN  32
-//---------------------------------
+#define MAX_STACK_SIZE 128
 
 float angleMode = 1.0f;
 
@@ -172,7 +126,7 @@ void clearEvalStack()
     evalStackSize = 0;
 }
 
-float exponentialf(float x, float n)
+double exponentialf(double x, double n)
 {
     if(x < 0)
     {
@@ -180,22 +134,22 @@ float exponentialf(float x, float n)
         {
             if(n > 0)
             {
-                return -powf(-x, n);
+                return -pow(-x, n);
             }
             else
             {
-                return 1 / -powf(-x, n);
+                return 1 / -pow(-x, n);
             }
         }
         else
         {
             if(n > 0)
             {
-                return powf(-x, n);
+                return pow(-x, n);
             }
             else
             {
-                return 1 / powf(-x, n);
+                return 1 / pow(-x, n);
             }
         }
     }
@@ -203,11 +157,11 @@ float exponentialf(float x, float n)
     {
         if(n > 0)
         {
-            return powf(x, n);
+            return pow(x, n);
         }
         else
         {
-            return 1 / powf(x, -n);
+            return 1 / pow(x, -n);
         }
     }
 }
@@ -272,7 +226,7 @@ uint8_t isFunction(uint8_t token)
     }
 }
 
-void extractNumber(uint8_t enteredText[], uint16_t inputIndex)
+void extractNumber(char input[], uint16_t inputIndex)
 {
     double temp = 0;
     double fraction = 0.1f;
@@ -281,21 +235,21 @@ void extractNumber(uint8_t enteredText[], uint16_t inputIndex)
     for(j = i; j < inputIndex; j++)
     {
         //Digit of a number
-        if(isdigit(enteredText[j]))
+        if(isdigit(input[j]))
         {
             if(numberState == 0)
             {
                 temp *= 10;
-                temp += enteredText[j] - '0';
+                temp += input[j] - '0';
             }
             else
             {
-                temp += (enteredText[j] - '0') * fraction;
+                temp += (input[j] - '0') * fraction;
                 fraction /= 10;
             }
         }
         //Decimal point
-        else if(enteredText[j] == '.')
+        else if(input[j] == '.')
         {
             numberState = 1;
         }
@@ -305,15 +259,15 @@ void extractNumber(uint8_t enteredText[], uint16_t inputIndex)
             //Sign check
             if(i >= 2)
             {
-                if(enteredText[i - 1] == '-' && (enteredText[i - 2] == '(' || isOperator(enteredText[i - 2]) || enteredText[i - 2] == '='))
+                if(input[i - 1] == '-' && (input[i - 2] == '(' || isOperator(input[i - 2]) || input[i - 2] == '='))
                 {
                     temp *= -1;
                 }
             }
-            //If the sign is at the beginning of the entered text
+            //If the sign is at the beginning of the input
             else if(i == 1)
             {
-                if(enteredText[0] == '-')
+                if(input[0] == '-')
                 {
                     temp *= -1;
                 }
@@ -326,14 +280,14 @@ void extractNumber(uint8_t enteredText[], uint16_t inputIndex)
     }
 }
 
-uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
+uint8_t extractFunction(char input[], uint16_t lastTextPos)
 {
     uint8_t sign = 0;
     
     //Sign check
     if(i >= 2)
     {
-        if(enteredText[i - 1] == '-' && (enteredText[i - 2] == '(' || isOperator(enteredText[i - 2]) || enteredText[i - 2] == '='))
+        if(input[i - 1] == '-' && (input[i - 2] == '(' || isOperator(input[i - 2]) || input[i - 2] == '='))
         {
             sign = 16;
         }
@@ -341,17 +295,17 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
     //If the sign is at the beginning of the entered text
     else if(i == 1)
     {
-        if(enteredText[0] == '-')
+        if(input[0] == '-')
         {
             sign = 16;
         }
     }
     
     //Check if it's an A-something function
-    if(enteredText[i] == 'A')
+    if(input[i] == 'A')
     {
         i++;
-        j = extractFunction(enteredText, lastTextPos);
+        j = extractFunction(input, lastTextPos);
         if(j != 0)
         {
             return j + 3;
@@ -359,16 +313,16 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
         return 0;
     }
     //SQRT
-    else if(enteredText[i] == 0xFB)
+    else if(input[i] == 0xFB)
     {
-        if(enteredText[i + 1] == '(')
+        if(input[i + 1] == '(')
         {
             i++;
             return F_SQRT + sign;
         }
-        else if(enteredText[i + 1] == 'N')
+        else if(input[i + 1] == 'N')
         {
-            if(enteredText[i + 2] == '(')
+            if(input[i + 2] == '(')
             {
                 i += 2;
                 return F_NRT + sign;
@@ -377,20 +331,20 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
         return 0;
     }
     //SIN / SINH / SEC
-    else if(enteredText[i] == 'S')
+    else if(input[i] == 'S')
     {
-        if(enteredText[i + 1] == 'I')
+        if(input[i + 1] == 'I')
         {
-            if(enteredText[i + 2] == 'N')
+            if(input[i + 2] == 'N')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_SIN + sign;
                 }
-                else if(enteredText[i + 3] == 'H')
+                else if(input[i + 3] == 'H')
                 {
-                    if(enteredText[i + 4] == '(')
+                    if(input[i + 4] == '(')
                     {
                         i += 4;
                         return F_SINH + sign;
@@ -398,11 +352,11 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
                 }
             }
         }
-        else if(enteredText[i + 1] == 'E')
+        else if(input[i + 1] == 'E')
         {
-            if(enteredText[i + 2] == 'C')
+            if(input[i + 2] == 'C')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_SEC + sign;
@@ -412,40 +366,40 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
         return 0;
     }
     //COS / COSH / COT / CSC
-    else if(enteredText[i] == 'C')
+    else if(input[i] == 'C')
     {
-        if(enteredText[i + 1] == 'O')
+        if(input[i + 1] == 'O')
         {
-            if(enteredText[i + 2] == 'S')
+            if(input[i + 2] == 'S')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_COS + sign;
                 }
-                else if(enteredText[i + 3] == 'H')
+                else if(input[i + 3] == 'H')
                 {
-                    if(enteredText[i + 4] == '(')
+                    if(input[i + 4] == '(')
                     {
                         i += 4;
                         return F_COSH + sign;
                     }
                 }
             }
-            else if(enteredText[i + 2] == 'T')
+            else if(input[i + 2] == 'T')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_COT + sign;
                 }
             }
         }
-        else if(enteredText[i + 1] == 'S')
+        else if(input[i + 1] == 'S')
         {
-            if(enteredText[i + 2] == 'C')
+            if(input[i + 2] == 'C')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_CSC + sign;
@@ -455,20 +409,20 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
         return 0;
     }
     //TAN / TANH
-    else if(enteredText[i] == 'T')
+    else if(input[i] == 'T')
     {
-        if(enteredText[i + 1] == 'A')
+        if(input[i + 1] == 'A')
         {
-            if(enteredText[i + 2] == 'N')
+            if(input[i + 2] == 'N')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_TAN + sign;
                 }
-                else if(enteredText[i + 3] == 'H')
+                else if(input[i + 3] == 'H')
                 {
-                    if(enteredText[i + 4] == '(')
+                    if(input[i + 4] == '(')
                     {
                         i += 4;
                         return F_TANH + sign;
@@ -479,22 +433,22 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
         return 0;
     }
     //LOG / LN
-    else if(enteredText[i] == 'L')
+    else if(input[i] == 'L')
     {
-        if(enteredText[i + 1] == 'O')
+        if(input[i + 1] == 'O')
         {
-            if(enteredText[i + 2] == 'G')
+            if(input[i + 2] == 'G')
             {
-                if(enteredText[i + 3] == '(')
+                if(input[i + 3] == '(')
                 {
                     i += 3;
                     return F_LOG + sign;
                 }
             }
         }
-        else if(enteredText[i + 1] == 'N')
+        else if(input[i + 1] == 'N')
         {
-            if(enteredText[i + 2] == '(')
+            if(input[i + 2] == '(')
             {
                 i += 2;
                 return F_LN + sign;
@@ -508,7 +462,7 @@ uint8_t extractFunction(uint8_t enteredText[], uint16_t lastTextPos)
     }
 }
 
-void parse(uint8_t enteredText[], uint16_t inputIndex)
+void parse(char enteredText[], uint16_t inputIndex)
 {
     uint8_t tempInt = 0;
     
@@ -761,12 +715,12 @@ void calculateResult(double x)
                         }
                         case F_COT:
                         {
-                            //temp = cot(stackTemp2 * angleMode);
+                            temp = 1.0 / tan(stackTemp2 * angleMode);
                             break;
                         }
                         case F_N_COT:
                         {
-                            //temp = -cot(stackTemp2 * angleMode);
+                            temp = -(1.0 / tan(stackTemp2 * angleMode));
                             break;
                         }
                         case F_SEC:

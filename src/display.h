@@ -23,6 +23,7 @@ void drawPlotGrid(SDL_Surface* screen);
 void drawFunction(SDL_Surface* screen, double points[], uint8_t index);
 
 void drawOSK(SDL_Surface* screen);
+void drawOSKCursor(SDL_Surface* screen, uint8_t new);
 
 void moveOSKCursor(SDL_Surface* screen, uint8_t dir);
 

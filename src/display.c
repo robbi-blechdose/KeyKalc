@@ -9,7 +9,7 @@ uint8_t cursorX, cursorY;
 const char* keyboard[4] = {"123+-QWERTZUIOP",
                            "456*\366ASDFGHJKL ",
                            "789^\373YXCVBNM   ",
-                           "0. ()          "};
+                           "0.,()\343e        "};
 
 const uint8_t plotColors[4][3] = {
     {0, 255, 0},
@@ -104,12 +104,12 @@ void drawPlotterInput(SDL_Surface* screen, char* inputs[], uint16_t* inputCursor
         characterRGBA(screen, 4, 18 + (boxHeight / 2) + (i * boxHeight) - 4, func++,
                         plotColors[i][0], plotColors[i][1], plotColors[i][2], 255);
         
-        uint16_t cursor = 123456; //Out of bounds means no cursor will be drawn
+        uint16_t cursor = 65535; //Out of bounds means no cursor will be drawn
         if(i == plotIndex)
         {
             cursor = inputCursors[i];
         }
-        drawInputText(screen, inputs[i], cursor, inputEnds[i], 18, 22 + (i * boxHeight), 29);
+        drawInputText(screen, inputs[i], cursor, inputEnds[i], 18, 22 + (i * boxHeight), 27);
     }
 }
 

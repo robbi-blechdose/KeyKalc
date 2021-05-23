@@ -149,12 +149,16 @@ int main(int argc, char **argv)
                             drawPlotGrid(screen);
                             for(i = 0; i < 4; i++)
                             {
+                                if(plotInputEnds[i] == 0)
+                                {
+                                    continue;
+                                }
                                 double points[240];
                                 parse(plotInputs[i], plotInputEnds[i]);
                                 for(j = 0; j < 240; j++)
                                 {
-                                    calculateResult(j - 120);
-                                    points[j] = getResult();
+                                    calculateResult(((double) j - 120.0) / 20.0);
+                                    points[j] = getResult() * 20.0;
                                 }
                                 clearStack();
                                 drawFunction(screen, points, i);
