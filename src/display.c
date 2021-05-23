@@ -173,6 +173,9 @@ void drawFunction(SDL_Surface* screen, double points[], uint8_t index)
         y2 = (uint8_t) clamp(offset - points[i], 13, 200);
         lineRGBA(screen, i - 1, y1, i, y2, plotColors[index][0], plotColors[index][1], plotColors[index][2], 255);
     }
+    //Clear top and bottom bars
+    hlineRGBA(screen, 0, 240, 13, 0, 255, 0, 255);
+    hlineRGBA(screen, 0, 240, 200, 0, 255, 0, 255);
 }
 
 void drawOSK(SDL_Surface* screen)
