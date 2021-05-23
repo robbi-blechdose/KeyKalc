@@ -26,7 +26,7 @@ void drawTitleBar(SDL_Surface* screen, char* mode)
     stringRGBA(screen, 36 + 16 * 8, 4, mode, 0, 255, 0, 255);
 }
 
-void drawInput(SDL_Surface* screen, char* input, uint16_t inputEnd)
+void drawInput(SDL_Surface* screen, char* input, uint16_t inputCursor, uint16_t inputEnd)
 {
     uint16_t i = 0;
     uint8_t x = 0;
@@ -34,9 +34,27 @@ void drawInput(SDL_Surface* screen, char* input, uint16_t inputEnd)
     
     boxRGBA(screen, 0, 14, 240, 199, 0, 0, 0, 255);
 
-    for(i = 0; i < inputEnd; i++)
+    for(i = 0; i <= inputEnd; i++)
     {
-        characterRGBA(screen, 4 + x * 8, 18 + y * 8, input[i], 0, 255, 0, 255);
+        char c;
+        if(i < inputEnd)
+        {
+            c = input[i];
+        }
+        else
+        {
+            c = ' ';
+        }
+
+        if(i == inputCursor)
+        {
+            boxRGBA(screen, 4 + x * 8, 17 + y * 8, 4 + x * 8 + 8, 17 + y * 8 + 8, 0, 255, 0, 255);
+            characterRGBA(screen, 4 + x * 8, 18 + y * 8, c, 0, 0, 0, 255);
+        }
+        else
+        {
+            characterRGBA(screen, 4 + x * 8, 18 + y * 8, c, 0, 255, 0, 255);
+        }
         x++;
         if(x == 29)
         {
@@ -51,6 +69,75 @@ void drawResult(SDL_Surface* screen, double result)
     char buffer[128];
     ftoa(result, buffer, -1);
     stringRGBA(screen, 4, 188, buffer, 0, 255, 0, 255);
+}
+
+void drawPlotGrid(SDL_Surface* screen)
+{
+    uint8_t i;
+    uint8_t graphCenterY = 14 + ((199 - 14) / 2);
+    //Clear screen
+    boxRGBA(screen, 0, 14, 240, 199, 0, 0, 0, 255);
+    //Horizontal grid lines
+    for(i = 16; i < 199; i += 10)
+    {
+        hlineRGBA(screen, 0, 240, i, 64, 64, 64, 255);
+    }
+    //Vertical grid lines
+    for(i = 0; i < 240; i += 10)
+    {
+        vlineRGBA(screen, i, 14, 199, 64, 64, 64, 255);
+    }
+    //X and Y axis
+    hlineRGBA(screen, 0, 240, graphCenterY, 0, 255, 0, 255);
+    vlineRGBA(screen, 240 / 2, 14, 199, 0, 255, 0, 255);
+    //Markers on Y axis
+    for(i = 26; i < 199; i += 20)
+    {
+        hlineRGBA(screen, 120 - 2, 120 + 2, i, 0, 255, 0, 255);
+    }
+    //Markers on X axis
+    for(i = 0; i < 240; i += 20)
+    {
+        vlineRGBA(screen, i, graphCenterY - 2, graphCenterY + 2, 0, 255, 0, 255);
+    }
+}
+
+//TODO: Add scaling, clamp values vertically
+void drawFunction(SDL_Surface* screen, int8_t points[], uint8_t index)
+{
+    uint8_t i;
+    uint8_t r, g, b;
+    switch(index)
+    {
+        case 0:
+        {
+            r = 0;
+            g = 255;
+            b = 0;
+            break;
+        }
+        case 1:
+        {
+            r = 255;
+            g = 0;
+            b = 0;
+            break;
+        }
+        case 2:
+        {
+            r = 0;
+            g = 0;
+            b = 255;
+            break;
+        }
+    }
+
+    uint8_t offset = 14 + ((199 - 14) / 2);
+
+    for(i = 1; i < 240; i++)
+    {
+        lineRGBA(screen, i - 1, offset - points[i - 1], i, offset - points[i], r, g, b, 255);
+    }
 }
 
 void drawOSK(SDL_Surface* screen)

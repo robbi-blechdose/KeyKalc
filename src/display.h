@@ -15,8 +15,10 @@ void initDisplay();
 
 void drawTitleBar(SDL_Surface* screen, char* mode);
 
-void drawInput(SDL_Surface* screen, char* input, uint16_t inputEnd);
+void drawInput(SDL_Surface* screen, char* input, uint16_t inputCursor, uint16_t inputEnd);
 void drawResult(SDL_Surface* screen, double result);
+void drawPlotGrid(SDL_Surface* screen);
+void drawFunction(SDL_Surface* screen, int8_t points[], uint8_t index);
 void drawOSK(SDL_Surface* screen);
 
 void moveOSKCursor(SDL_Surface* screen, uint8_t dir);
