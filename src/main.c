@@ -10,10 +10,10 @@ SDL_Event event;
 SDL_Surface* screen;
 FPSmanager fpsManager;
 
-//TODO: Move to its own file: "input"
-#define INPUT_LENGTH 256
-char input[INPUT_LENGTH];
-uint16_t inputIndex = 0;
+#define MAX_INPUT_LENGTH 256
+char input[MAX_INPUT_LENGTH];
+uint16_t inputEnd = 0;
+uint16_t inputCursor = 0;
 
 #define MODE_CALC  0
 #define MODE_GRAPH 1
@@ -26,6 +26,7 @@ void applyModeSwitch()
     if(mode == MODE_CALC)
     {
         drawTitleBar(screen, "Calc");
+        drawInput(screen, input, inputCursor, inputEnd);
     }
     else
     {
@@ -85,50 +86,86 @@ int main(int argc, char **argv)
                     }
                     case SDLK_a:
                     {
-                        input[inputIndex++] = getCurrentChar();
-                        drawInput(screen, input, inputIndex);
+                        enterChar(input, &inputCursor, &inputEnd, getCurrentChar());
+                        drawInput(screen, input, inputCursor, inputEnd);
                         break;
                     }
                     case SDLK_b:
                     {
-                        inputIndex--;
-                        drawInput(screen, input, inputIndex);
+                        removeChar(input, &inputCursor, &inputEnd);
+                        drawInput(screen, input, inputCursor, inputEnd);
                         break;
                     }
                     case SDLK_s:
                     {
                         //Start calculation
-                        parse(input, inputIndex);
+                        parse(input, inputEnd);
                         calculateResult(0);
                         drawResult(screen, getResult());
                         break;
                     }
-                    case SDLK_k:
+                    case SDLK_x:
                     {
-                        //Show menu
+                        if(inputCursor < inputEnd)
+                        {
+                            inputCursor++;
+                            drawInput(screen, input, inputCursor, inputEnd);
+                        }
                         break;
                     }
-                    case SDLK_n:
+                    case SDLK_y:
                     {
+                        if(inputCursor > 0)
+                        {
+                            inputCursor--;
+                            drawInput(screen, input, inputCursor, inputEnd);
+                        }
+                        break;
+                    }
+                    case SDLK_k:
+                    {
+                        //Mode switch
                         if(mode == MODE_CALC)
                         {
                             mode = MODE_GRAPH;
                             applyModeSwitch();
+                            //TODO: Remove this test
+                            drawPlotGrid(screen);
+                            int8_t points[240];
+                            uint8_t i;
+                            for(i = 0; i < 240; i++)
+                            {
+                                points[i] = 20.0f * sin((i - 120) / 20.0f);
+                            }
+                            drawFunction(screen, points, 0);
+                            for(i = 0; i < 240; i++)
+                            {
+                                points[i] = 20.0f * cos((i - 120) / 20.0f);
+                            }
+                            drawFunction(screen, points, 1);
                         }
-                        break;
-                    }
-                    case SDLK_m:
-                    {
-                        if(mode == MODE_GRAPH)
+                        else //if(mode == MODE_GRAPH)
                         {
                             mode = MODE_CALC;
                             applyModeSwitch();
                         }
                         break;
                     }
+                    case SDLK_n:
+                    {
+                        break;
+                    }
+                    case SDLK_m:
+                    {
+                        break;
+                    }
                     case SDLK_q:
                     {
                         running = 0;
+                        break;
+                    }
+                    default:
+                    {
                         break;
                     }
                 }
