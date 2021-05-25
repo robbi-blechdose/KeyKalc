@@ -29,4 +29,6 @@ void moveOSKCursor(SDL_Surface* screen, uint8_t dir);
 
 uint8_t getCurrentChar();
 
+void drawSettings(SDL_Surface* screen, double angleMode);
+
 #endif

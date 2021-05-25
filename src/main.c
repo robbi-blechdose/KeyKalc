@@ -1,4 +1,5 @@
 #include <SDL/SDL.h>
+#include <math.h>
 #include "SDL_gfx/SDL_framerate.h"
 
 #include "display.h"
@@ -14,6 +15,7 @@ FPSmanager fpsManager;
 #define MODE_CALC  0
 #define MODE_GRAPH 1
 #define MODE_GDISP 2
+#define MODE_PREFS 3
 uint8_t mode;
 
 //Calc mode input
@@ -32,6 +34,9 @@ uint16_t plotInputCursors[4] = {0, 0, 0, 0};
 uint16_t plotInputEnds[4] = {0, 0, 0, 0};
 uint8_t plotIndex = 0;
 
+//Settings
+double angleMode = 1.0;
+
 void applyModeSwitch()
 {
     drawOSK(screen);
@@ -41,10 +46,15 @@ void applyModeSwitch()
         drawTitleBar(screen, "Calc");
         drawInput(screen, input, inputCursor, inputEnd);
     }
-    else
+    else if(mode == MODE_GRAPH || mode == MODE_GDISP)
     {
         drawTitleBar(screen, "Plot");
         drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
+    }
+    else //if(mode == G_PREFS)
+    {
+        drawTitleBar(screen, "Prefs");
+        drawSettings(screen, angleMode);
     }
 }
 
@@ -110,6 +120,18 @@ int main(int argc, char **argv)
                                         &(plotInputEnds[plotIndex]), getCurrentChar());
                             drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
                         }
+                        else if(mode == MODE_PREFS)
+                        {
+                            if(angleMode == 1.0)
+                            {
+                                angleMode = M_PI / 180.0;
+                            }
+                            else
+                            {
+                                angleMode = 1.0;
+                            }
+                            drawSettings(screen, angleMode);
+                        }
                         break;
                     }
                     case SDLK_b:
@@ -138,7 +160,7 @@ int main(int argc, char **argv)
                         {
                             //Start calculation
                             parse(input, inputEnd);
-                            calculateResult(0);
+                            calculateResult(0, angleMode);
                             clearStack();
                             drawResult(screen, getResult());
                         }
@@ -157,7 +179,7 @@ int main(int argc, char **argv)
                                 parse(plotInputs[i], plotInputEnds[i]);
                                 for(j = 0; j < 240; j++)
                                 {
-                                    calculateResult(((double) j - 120.0) / 20.0);
+                                    calculateResult(((double) j - 120.0) / 20.0, angleMode);
                                     points[j] = getResult() * 20.0;
                                 }
                                 clearStack();
@@ -213,7 +235,11 @@ int main(int argc, char **argv)
                         {
                             mode = MODE_GRAPH;
                         }
-                        else //if(mode == MODE_GRAPH)
+                        else if(mode == MODE_GRAPH)
+                        {
+                            mode = MODE_PREFS;
+                        }
+                        else
                         {
                             mode = MODE_CALC;
                         }

@@ -50,7 +50,7 @@
 //---------------------------------
 
 void parse(char enteredText[], uint16_t lastTextPos);
-void calculateResult(double x);
+void calculateResult(double x, double angleMode);
 void clearStack();
 double getResult();
 

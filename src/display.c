@@ -141,6 +141,8 @@ void drawPlotGrid(SDL_Surface* screen)
     {
         vlineRGBA(screen, i, graphCenterY - 2, graphCenterY + 2, 0, 255, 0, 255);
     }
+    stringRGBA(screen, 216, graphCenterY + 4, "5", 0, 255, 0, 255);
+    stringRGBA(screen, 124, 24, "5", 0, 255, 0, 255);
 }
 
 double clamp(double value, double low, double high)
@@ -267,4 +269,19 @@ void moveOSKCursor(SDL_Surface* screen, uint8_t dir)
 uint8_t getCurrentChar()
 {
     return keyboard[cursorY][cursorX];
+}
+
+void drawSettings(SDL_Surface* screen, double angleMode)
+{
+    clearMain(screen);
+
+    stringRGBA(screen, 4, 18, "Angle mode:", 0, 255, 0, 255);
+    if(angleMode == 1.0)
+    {
+        stringRGBA(screen, 4 + 12 * 8, 18, "RAD", 0, 255, 0, 255);
+    }
+    else
+    {
+        stringRGBA(screen, 4 + 12 * 8, 18, "DEG", 0, 255, 0, 255);
+    }
 }

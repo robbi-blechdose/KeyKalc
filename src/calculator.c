@@ -6,8 +6,6 @@
 
 #define MAX_STACK_SIZE 128
 
-float angleMode = 1.0f;
-
 typedef struct
 {
     double number;
@@ -462,39 +460,39 @@ uint8_t extractFunction(char input[], uint16_t lastTextPos)
     }
 }
 
-void parse(char enteredText[], uint16_t inputIndex)
+void parse(char input[], uint16_t inputIndex)
 {
     uint8_t tempInt = 0;
     
     /** -- Dijkstra's shunting yard algorithm (https://en.wikipedia.org/wiki/Shunting-yard_algorithm) -- */
     
-    enteredText[inputIndex++] = '#';
+    input[inputIndex++] = '#';
     
     for(i = 0; i < inputIndex; i++)
     {
         //Digit of a number
-        if(isdigit(enteredText[i]))
+        if(isdigit(input[i]))
         {
             //Extract the whole number
-            extractNumber(enteredText, inputIndex);
+            extractNumber(input, inputIndex);
         }
         //Operator
-        else if(isOperator(enteredText[i]) && i != 0 && !isOperator(enteredText[i - 1]) && enteredText[i - 1] != '=' && enteredText[i - 1] != '(')
+        else if(isOperator(input[i]) && i != 0 && !isOperator(input[i - 1]) && input[i - 1] != '=' && input[i - 1] != '(')
         {
-            while(((isOperatorLeftAssociative(enteredText[i]) && getOpPrecedence(topOperatorStack()) >= getOpPrecedence(enteredText[i])) ||
-                    getOpPrecedence(topOperatorStack()) > getOpPrecedence(enteredText[i])) && topOperatorStack() != '(')
+            while(((isOperatorLeftAssociative(input[i]) && getOpPrecedence(topOperatorStack()) >= getOpPrecedence(input[i])) ||
+                    getOpPrecedence(topOperatorStack()) > getOpPrecedence(input[i])) && topOperatorStack() != '(')
             {
                 pushStack(0, topOperatorStack());
                 popOperatorStack();
             }
             
-            pushOperatorStack(enteredText[i]);
+            pushOperatorStack(input[i]);
         }
-        else if(enteredText[i] == '(')
+        else if(input[i] == '(')
         {
-            pushOperatorStack(enteredText[i]);
+            pushOperatorStack(input[i]);
         }
-        else if(enteredText[i] == ')')
+        else if(input[i] == ')')
         {
             while(topOperatorStack() != 0 && !(topOperatorStack() == '(' || isFunction(topOperatorStack())))
             {
@@ -515,16 +513,16 @@ void parse(char enteredText[], uint16_t inputIndex)
             }
         }
         //ANS = Last result
-        else if(enteredText[i] == 'A' && enteredText[i + 1] == 'N' && enteredText[i + 2] == 'S')
+        else if(input[i] == 'A' && input[i + 1] == 'N' && input[i + 2] == 'S')
         {
             i += 2;
             pushStack(result, TYPE_NUMBER);
         }
         //For the function plotter: Include X in postfix!
         //Use Y for when X has a minus in front of it
-        else if(enteredText[i] == 'X')
+        else if(input[i] == 'X')
         {
-            if(enteredText[i - 1] == '-')
+            if(input[i - 1] == '-')
             {
                 pushStack(0, 'Y');
             }
@@ -534,20 +532,20 @@ void parse(char enteredText[], uint16_t inputIndex)
             }
         }
         //A function
-        else if(isupper(enteredText[i]) || enteredText[i] == 0xFB)
+        else if(isupper(input[i]) || input[i] == 0xFB)
         {
-            tempInt = extractFunction(enteredText, inputIndex);
+            tempInt = extractFunction(input, inputIndex);
             if(tempInt != 0)
             {
                 pushOperatorStack(tempInt);
             }
         }
         //Pi detected
-        else if(enteredText[i] == 0xE3)
+        else if(input[i] == 0xE3)
         {
             pushStack(M_PI, TYPE_NUMBER);
         }
-        else if(enteredText[i] == 'e')
+        else if(input[i] == 'e')
         {
             pushStack(M_E, TYPE_NUMBER);
         }
@@ -559,11 +557,11 @@ void parse(char enteredText[], uint16_t inputIndex)
         popOperatorStack();
     }
     
-    enteredText[inputIndex] = 0;
+    input[inputIndex] = 0;
     inputIndex--;
 }
 
-void calculateResult(double x)
+void calculateResult(double x, double angleMode)
 {
     stackElement* stackTemp;
     double stackTemp2;
@@ -725,22 +723,22 @@ void calculateResult(double x)
                         }
                         case F_SEC:
                         {
-                            temp = 1 / cos(stackTemp2 * angleMode);
+                            temp = 1.0 / cos(stackTemp2 * angleMode);
                             break;
                         }
                         case F_N_SEC:
                         {
-                            temp = -(1 / cos(stackTemp2 * angleMode));
+                            temp = -(1.0 / cos(stackTemp2 * angleMode));
                             break;
                         }
                         case F_CSC:
                         {
-                            temp = 1 / sin(stackTemp2 * angleMode);
+                            temp = 1.0 / sin(stackTemp2 * angleMode);
                             break;
                         }
                         case F_N_CSC:
                         {
-                            temp = -(1 / sin(stackTemp2 * angleMode));
+                            temp = -(1.0 / sin(stackTemp2 * angleMode));
                             break;
                         }
                         case F_SINH:
