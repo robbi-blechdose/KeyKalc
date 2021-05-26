@@ -1,6 +1,6 @@
 #include <SDL/SDL.h>
 #include <math.h>
-#include "SDL_gfx/SDL_framerate.h"
+#include "SDL_framerate.h"
 
 #include "display.h"
 #include "calculator.h"

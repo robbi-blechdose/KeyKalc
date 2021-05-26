@@ -1,6 +1,6 @@
 #include <SDL/SDL.h>
-#include "SDL_gfx/SDL_gfxPrimitives.h"
-#include "SDL_gfx/SDL_gfxPrimitives_font.h"
+#include "SDL_gfxPrimitives.h"
+#include "SDL_gfxPrimitives_font.h"
 
 #include "display.h"
 #include "ftoa.h"
