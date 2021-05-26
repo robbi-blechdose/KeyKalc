@@ -36,6 +36,16 @@ uint8_t plotIndex = 0;
 
 //Settings
 double angleMode = 1.0;
+uint8_t zoomIndex = 3;
+
+const double zoomLevels[6] = {
+    0.125,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0
+};
 
 void applyModeSwitch()
 {
@@ -55,6 +65,29 @@ void applyModeSwitch()
     {
         drawTitleBar(screen, "Prefs");
         drawSettings(screen, angleMode);
+    }
+}
+
+void plotGraph()
+{
+    uint8_t i, j;
+    double zoom = zoomLevels[zoomIndex];
+    drawPlotGrid(screen, zoom);
+    for(i = 0; i < 4; i++)
+    {
+        if(plotInputEnds[i] == 0)
+        {
+            continue;
+        }
+        double points[240];
+        parse(plotInputs[i], plotInputEnds[i]);
+        for(j = 0; j < 240; j++)
+        {
+            calculateResult(((double) j - 120.0) / (20.0 * zoom), angleMode);
+            points[j] = getResult() * 20.0 * zoom;
+        }
+        clearStack();
+        drawFunction(screen, points, i);
     }
 }
 
@@ -167,24 +200,7 @@ int main(int argc, char **argv)
                         else //if(mode == MODE_GRAPH)
                         {
                             mode = MODE_GDISP;
-                            uint8_t i, j;
-                            drawPlotGrid(screen);
-                            for(i = 0; i < 4; i++)
-                            {
-                                if(plotInputEnds[i] == 0)
-                                {
-                                    continue;
-                                }
-                                double points[240];
-                                parse(plotInputs[i], plotInputEnds[i]);
-                                for(j = 0; j < 240; j++)
-                                {
-                                    calculateResult(((double) j - 120.0) / 20.0, angleMode);
-                                    points[j] = getResult() * 20.0;
-                                }
-                                clearStack();
-                                drawFunction(screen, points, i);
-                            }
+                            plotGraph();
                         }
                         break;
                     }
@@ -206,6 +222,14 @@ int main(int argc, char **argv)
                                 drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
                             }
                         }
+                        else if(mode == MODE_GDISP)
+                        {
+                            if(zoomIndex < 5)
+                            {
+                                zoomIndex++;
+                            }
+                            plotGraph();
+                        }
                         break;
                     }
                     case SDLK_y:
@@ -225,6 +249,14 @@ int main(int argc, char **argv)
                                 plotInputCursors[plotIndex]--;
                                 drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
                             }
+                        }
+                        else if(mode == MODE_GDISP)
+                        {
+                            if(zoomIndex > 0)
+                            {
+                                zoomIndex--;
+                            }
+                            plotGraph();
                         }
                         break;
                     }

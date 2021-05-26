@@ -19,7 +19,7 @@ void drawInput(SDL_Surface* screen, char* input, uint16_t inputCursor, uint16_t 
 void drawResult(SDL_Surface* screen, double result);
 
 void drawPlotterInput(SDL_Surface* screen, char* inputs[], uint16_t* inputCursors, uint16_t* inputEnds, uint8_t plotIndex);
-void drawPlotGrid(SDL_Surface* screen);
+void drawPlotGrid(SDL_Surface* screen, double zoom);
 void drawFunction(SDL_Surface* screen, double points[], uint8_t index);
 
 void drawOSK(SDL_Surface* screen);

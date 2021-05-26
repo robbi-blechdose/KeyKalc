@@ -113,7 +113,7 @@ void drawPlotterInput(SDL_Surface* screen, char* inputs[], uint16_t* inputCursor
     }
 }
 
-void drawPlotGrid(SDL_Surface* screen)
+void drawPlotGrid(SDL_Surface* screen, double zoom)
 {
     uint8_t i;
     uint8_t graphCenterY = 14 + ((199 - 14) / 2);
@@ -141,8 +141,12 @@ void drawPlotGrid(SDL_Surface* screen)
     {
         vlineRGBA(screen, i, graphCenterY - 2, graphCenterY + 2, 0, 255, 0, 255);
     }
-    stringRGBA(screen, 216, graphCenterY + 4, "5", 0, 255, 0, 255);
-    stringRGBA(screen, 124, 24, "5", 0, 255, 0, 255);
+
+    char zoomStr[20];
+    ftoa(5.0 / zoom, zoomStr, -1);
+
+    stringRGBA(screen, 208, graphCenterY + 4, zoomStr, 0, 255, 0, 255);
+    stringRGBA(screen, 124, 24, zoomStr, 0, 255, 0, 255);
 }
 
 double clamp(double value, double low, double high)
@@ -161,7 +165,6 @@ double clamp(double value, double low, double high)
     }
 }
 
-//TODO: Add scaling
 void drawFunction(SDL_Surface* screen, double points[], uint8_t index)
 {
     uint8_t i;
