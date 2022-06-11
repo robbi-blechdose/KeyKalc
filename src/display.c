@@ -6,11 +6,6 @@
 #include "ftoa.h"
 
 uint8_t cursorX, cursorY;
-/**
-const char* keyboard[4] = {"123+-QWERTZUIOP",
-                           "456*\366ASDFGHJKL ",
-                           "789^\373YXCVBNM   ",
-                           "0.,()\343e        "};**/
 
 const char* keyboard[4] = {
     "123 +- SIN  COS  TAN  COT LOG",

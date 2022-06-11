@@ -2,7 +2,7 @@
 Type=Application
 Name=KeyKalc
 Comment=Graphing Calculator
-Exec=main-funkey.elf
+Exec=main.elf
 Icon=icon
 Terminal=false
 Categories=applications;
