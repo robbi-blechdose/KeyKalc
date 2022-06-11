@@ -6,8 +6,7 @@
 
 #define MAX_STACK_SIZE 128
 
-typedef struct
-{
+typedef struct {
     double number;
     //Used for the stack, so that it can also be an operator
     uint8_t type;
@@ -36,7 +35,7 @@ void pushStack(double number, uint8_t type)
     }
 }
 
-stackElement * topStack()
+stackElement* topStack()
 {
     if(stackSize > 0)
     {
@@ -202,14 +201,7 @@ uint8_t isOperator(uint8_t token)
 
 uint8_t isOperatorLeftAssociative(uint8_t token)
 {
-    if(token == '^')
-    {
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
+    return token != '^';
 }
 
 uint8_t isFunction(uint8_t token)
@@ -310,7 +302,7 @@ uint8_t extractFunction(char input[], uint16_t lastTextPos)
         }
         return 0;
     }
-    //SQRT
+    //SQRT / NRT
     else if(input[i] == 0xFB)
     {
         if(input[i + 1] == '(')

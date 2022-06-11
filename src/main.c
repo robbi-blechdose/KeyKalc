@@ -70,10 +70,9 @@ void applyModeSwitch()
 
 void plotGraph()
 {
-    uint8_t i, j;
     double zoom = zoomLevels[zoomIndex];
     drawPlotGrid(screen, zoom);
-    for(i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < 4; i++)
     {
         if(plotInputEnds[i] == 0)
         {
@@ -81,7 +80,7 @@ void plotGraph()
         }
         double points[240];
         parse(plotInputs[i], plotInputEnds[i]);
-        for(j = 0; j < 240; j++)
+        for(uint8_t j = 0; j < 240; j++)
         {
             calculateResult(((double) j - 120.0) / (20.0 * zoom), angleMode);
             points[j] = getResult() * 20.0 * zoom;
@@ -144,13 +143,20 @@ int main(int argc, char **argv)
                     {
                         if(mode == MODE_CALC)
                         {
-                            enterChar(input, &inputCursor, &inputEnd, getCurrentChar());
+                            char* str = getCurrentChar();
+                            while(*str != '\0')
+                            {
+                                enterChar(input, &inputCursor, &inputEnd, *str++);
+                            }
                             drawInput(screen, input, inputCursor, inputEnd);
                         }
                         else if(mode == MODE_GRAPH)
                         {
-                            enterChar(plotInputs[plotIndex], &(plotInputCursors[plotIndex]),
-                                        &(plotInputEnds[plotIndex]), getCurrentChar());
+                            char* str = getCurrentChar();
+                            while(*str != '\0')
+                            {
+                                enterChar(plotInputs[plotIndex], &(plotInputCursors[plotIndex]), &(plotInputEnds[plotIndex]), *str++);
+                            }
                             drawPlotterInput(screen, plotInputs, plotInputCursors, plotInputEnds, plotIndex);
                         }
                         else if(mode == MODE_PREFS)
@@ -197,7 +203,7 @@ int main(int argc, char **argv)
                             clearStack();
                             drawResult(screen, getResult());
                         }
-                        else //if(mode == MODE_GRAPH)
+                        else if(mode == MODE_GRAPH)
                         {
                             mode = MODE_GDISP;
                             plotGraph();

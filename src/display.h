@@ -9,7 +9,7 @@
 #define DIR_R 3
 
 #define C_BOTTOM 3
-#define C_RIGHT 14
+#define C_RIGHT  9
 
 void initDisplay();
 
@@ -27,7 +27,7 @@ void drawOSKCursor(SDL_Surface* screen, uint8_t new);
 
 void moveOSKCursor(SDL_Surface* screen, uint8_t dir);
 
-uint8_t getCurrentChar();
+char* getCurrentChar();
 
 void drawSettings(SDL_Surface* screen, double angleMode);
 

@@ -6,10 +6,30 @@
 #include "ftoa.h"
 
 uint8_t cursorX, cursorY;
+/**
 const char* keyboard[4] = {"123+-QWERTZUIOP",
                            "456*\366ASDFGHJKL ",
                            "789^\373YXCVBNM   ",
-                           "0.,()\343e        "};
+                           "0.,()\343e        "};**/
+
+const char* keyboard[4] = {
+    "123 +- SIN  COS  TAN  COT LOG",
+    "456 *\366 SINH COSH TANH SEC LN",
+    "789 ^\373 ASIN ACOS ATAN CSC N\373",
+    " 0. () X ,"
+};
+
+typedef struct {
+    uint8_t x;
+    char* str;
+} KeyboardEntry;
+
+const KeyboardEntry keyboardChars[4][10] = {
+    {{0, "1"}, {1, "2"}, {2, "3"}, {4, "+"}, {5, "-"}, {7, "SIN"}, {12, "COS"}, {17, "TAN"}, {22, "COT"}, {26, "LOG"}},
+    {{0, "4"}, {1, "5"}, {2, "6"}, {4, "*"}, {5, "\366"}, {7, "SINH"}, {12, "COSH"}, {17, "TANH"}, {22, "SEC"}, {26, "LN"}},
+    {{0, "7"}, {1, "8"}, {2, "9"}, {4, "^"}, {5, "\373"}, {7, "ASIN"}, {12, "ACOS"}, {17, "ATAN"}, {22, "CSC"}, {26, "N\373"}},
+    {{0, " "}, {1, "0"}, {2, "."}, {4, "("}, {5, ")"}, {7, "X"}, {9, ","}, {12, ""}, {17, ""}, {22, ""}}
+};
 
 const uint8_t plotColors[4][3] = {
     {0, 255, 0},
@@ -41,11 +61,10 @@ void drawTitleBar(SDL_Surface* screen, char* mode)
 void drawInputText(SDL_Surface* screen, char* input, uint16_t inputCursor, uint16_t inputEnd,
                     uint8_t xStart, uint8_t yStart, uint8_t lineWidth)
 {
-    uint16_t i = 0;
     uint8_t x = 0;
     uint8_t y = 0;
 
-    for(i = 0; i <= inputEnd; i++)
+    for(uint16_t i = 0; i <= inputEnd; i++)
     {
         char c;
         if(i < inputEnd)
@@ -91,13 +110,12 @@ void drawResult(SDL_Surface* screen, double result)
 
 void drawPlotterInput(SDL_Surface* screen, char* inputs[], uint16_t* inputCursors, uint16_t* inputEnds, uint8_t plotIndex)
 {
-    uint8_t i;
     clearMain(screen);
 
     uint8_t boxHeight = (199 - 14) / 4;
     char func = 'f';
 
-    for(i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < 4; i++)
     {
         roundedRectangleRGBA(screen, 14, 18 + (i * boxHeight),
                                     240 - 4, 18 + (boxHeight - 6) + (i * boxHeight), 3, 0, 255, 0, 255);
@@ -115,16 +133,15 @@ void drawPlotterInput(SDL_Surface* screen, char* inputs[], uint16_t* inputCursor
 
 void drawPlotGrid(SDL_Surface* screen, double zoom)
 {
-    uint8_t i;
     uint8_t graphCenterY = 14 + ((199 - 14) / 2);
     clearMain(screen);
     //Horizontal grid lines
-    for(i = 16; i < 199; i += 10)
+    for(uint8_t i = 16; i < 199; i += 10)
     {
         hlineRGBA(screen, 0, 240, i, 64, 64, 64, 255);
     }
     //Vertical grid lines
-    for(i = 0; i < 240; i += 10)
+    for(uint8_t i = 0; i < 240; i += 10)
     {
         vlineRGBA(screen, i, 14, 199, 64, 64, 64, 255);
     }
@@ -132,12 +149,12 @@ void drawPlotGrid(SDL_Surface* screen, double zoom)
     hlineRGBA(screen, 0, 240, graphCenterY, 0, 255, 0, 255);
     vlineRGBA(screen, 240 / 2, 14, 199, 0, 255, 0, 255);
     //Markers on Y axis
-    for(i = 26; i < 199; i += 20)
+    for(uint8_t i = 26; i < 199; i += 20)
     {
         hlineRGBA(screen, 120 - 2, 120 + 2, i, 0, 255, 0, 255);
     }
     //Markers on X axis
-    for(i = 0; i < 240; i += 20)
+    for(uint8_t i = 0; i < 240; i += 20)
     {
         vlineRGBA(screen, i, graphCenterY - 2, graphCenterY + 2, 0, 255, 0, 255);
     }
@@ -167,12 +184,10 @@ double clamp(double value, double low, double high)
 
 void drawFunction(SDL_Surface* screen, double points[], uint8_t index)
 {
-    uint8_t i;
-
     uint8_t y1, y2;
     uint8_t offset = 14 + ((199 - 14) / 2);
 
-    for(i = 1; i < 240; i++)
+    for(uint8_t i = 1; i < 240; i++)
     {
         y1 = (uint8_t) clamp(offset - points[i - 1], 13, 200);
         y2 = (uint8_t) clamp(offset - points[i], 13, 200);
@@ -195,18 +210,21 @@ void drawOSK(SDL_Surface* screen)
 
 void drawOSKCursor(SDL_Surface* screen, uint8_t new)
 {
-    int x = 4 + cursorX * 8;
+    KeyboardEntry key = keyboardChars[cursorY][cursorX];
+    int x = 4 + key.x * 8;
     int y = 204 + cursorY * 8;
 
     if(new)
     {
-        boxRGBA(screen, x - 1, y - 1, x + 7, y + 7, 0, 255, 0, 255);
-        characterRGBA(screen, x, y, keyboard[cursorY][cursorX], 0, 0, 0, 255);
+        boxRGBA(screen, x - 1, y - 1, x + strlen(key.str) * 8 - 1, y + 7, 0, 255, 0, 255);
+        //characterRGBA(screen, x, y, keyboard[cursorY][cursorX], 0, 0, 0, 255);
+        stringRGBA(screen, x, y, key.str, 0, 0, 0, 255);
     }
     else
     {
-        boxRGBA(screen, x - 1, y - 1, x + 7, y + 7, 0, 0, 0, 255);
-        characterRGBA(screen, x, y, keyboard[cursorY][cursorX], 0, 255, 0, 255);
+        boxRGBA(screen, x - 1, y - 1, x + strlen(key.str) * 8 - 1, y + 7, 0, 0, 0, 255);
+        //characterRGBA(screen, x, y, keyboard[cursorY][cursorX], 0, 255, 0, 255);
+        stringRGBA(screen, x, y, key.str, 0, 255, 0, 255);
     }
 }
 
@@ -269,9 +287,9 @@ void moveOSKCursor(SDL_Surface* screen, uint8_t dir)
     drawOSKCursor(screen, 1);
 }
 
-uint8_t getCurrentChar()
+char* getCurrentChar()
 {
-    return keyboard[cursorY][cursorX];
+    return keyboardChars[cursorY][cursorX].str;
 }
 
 void drawSettings(SDL_Surface* screen, double angleMode)
@@ -287,4 +305,8 @@ void drawSettings(SDL_Surface* screen, double angleMode)
     {
         stringRGBA(screen, 4 + 12 * 8, 18, "DEG", 0, 255, 0, 255);
     }
+
+    //Date and author notice
+    stringRGBA(screen, 240 / 2 - 11 * 8 / 2, 240 - 72, "2021 - 2022", 0, 255, 0, 255);
+    stringRGBA(screen, 240 / 2 - 15 * 8 / 2, 240 - 64, "Robbi Blechdose", 0, 255, 0, 255);
 }
